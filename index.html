@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
+    <title>SolarInvest & FlowNest (IA) • Hub 3D</title>
+
+    <!-- Configurações PWA -->
+    <meta name="theme-color" content="#050814">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Solar & FlowNest">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Inter Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- QRious (Gerador de QR Code PIX) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <!-- MapLibre GL CSS & JS -->
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'] },
+                    colors: {
+                        'solar-bg': '#050814',
+                        'solar-neon': '#39ff4d',
+                        'solar-gold': '#fbbf24'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body {
+            touch-action: manipulation;
+            min-height: 100%;
+            background-color: #050814;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        .tabular-nums { font-variant-numeric: tabular-nums; }
+
+        .page-ambient-bg {
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 15% 15%, rgba(245, 158, 11, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 85% 20%, rgba(14, 165, 233, 0.18) 0%, transparent 50%),
+                linear-gradient(180deg, #090e24 0%, #050814 60%, #040711 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .hero-profit-box {
+            position: relative;
+            border-radius: 24px;
+            background: linear-gradient(135deg, rgba(22, 32, 58, 0.92) 0%, rgba(11, 18, 36, 0.96) 55%, rgba(12, 38, 34, 0.92) 100%);
+            border: 1px solid rgba(57, 255, 77, 0.35);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
+        }
+
+        .bolt-orb {
+            background: radial-gradient(circle at 35% 30%, rgba(57, 255, 77, 0.25), rgba(16, 185, 129, 0.06));
+            border: 1.5px solid rgba(57, 255, 77, 0.65);
+        }
+
+        .client-dark-card {
+            background: linear-gradient(180deg, rgba(19, 28, 52, 0.95) 0%, rgba(11, 17, 34, 0.98) 100%);
+            border-radius: 22px;
+            border: 1px solid rgba(96, 165, 250, 0.24);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            contain: content;
+        }
+
+        .inner-profit-panel {
+            background: rgba(24, 35, 64, 0.75);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 14px;
+            padding: 10px 12px;
+        }
+
+        .btn-more-details {
+            width: 100%;
+            padding: 9px 14px;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #1d4ed8 0%, #173ba6 100%);
+            border: 1px solid rgba(96, 165, 250, 0.45);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+        .btn-more-details:active { transform: scale(0.97); }
+
+        .top-glass-pill {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(148, 163, 184, 0.22);
+        }
+
+        /* LEDs Status Servidor / API */
+        .server-pill-online { background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(57, 255, 77, 0.45); box-shadow: 0 0 16px rgba(57, 255, 77, 0.15); }
+        .server-pill-offline { background: rgba(239, 68, 68, 0.14); border: 1px solid rgba(248, 113, 113, 0.55); box-shadow: 0 0 16px rgba(239, 68, 68, 0.22); }
+        .server-pill-checking { background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(251, 191, 36, 0.4); }
+        .led-glow-green { background-color: #39ff4d; box-shadow: 0 0 8px #39ff4d, 0 0 16px #22c55e; }
+        .led-glow-red { background-color: #ef4444; box-shadow: 0 0 8px #ef4444, 0 0 16px #dc2626; }
+        .led-glow-amber { background-color: #fbbf24; box-shadow: 0 0 8px #fbbf24; }
+
+        /* Modais Bottom Sheet */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 6, 16, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .bottom-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translate(-50%, 100%);
+            width: 100%;
+            max-width: 520px;
+            background: #10172d;
+            color: #ffffff;
+            border-top-left-radius: 26px;
+            border-top-right-radius: 26px;
+            padding: 18px 20px calc(env(safe-area-inset-bottom) + 28px);
+            z-index: 2001;
+            border-top: 1px solid rgba(96, 165, 250, 0.3);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-pill {
+            width: 40px;
+            height: 4px;
+            background: rgba(255,255,255,0.22);
+            border-radius: 99px;
+            margin: 0 auto 16px;
+        }
+
+        /* Navegação Principal Fixa (3 Abas) */
+        .main-tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1500;
+            background: rgba(9, 14, 34, 0.96);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(96, 165, 250, 0.25);
+            padding: 8px 12px calc(env(safe-area-inset-bottom) + 8px);
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.65);
+        }
+        .main-tab-btn {
+            flex: 1;
+            max-width: 180px;
+            padding: 8px 10px;
+            border-radius: 16px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 800;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .main-tab-btn i { font-size: 16px; }
+        .main-tab-btn.active[data-tab="solar"] {
+            background: rgba(245, 158, 11, 0.16);
+            border-color: rgba(245, 158, 11, 0.45);
+            color: #fbbf24;
+        }
+        .main-tab-btn.active[data-tab="software"] {
+            background: rgba(56, 189, 248, 0.16);
+            border-color: rgba(56, 189, 248, 0.45);
+            color: #38bdf8;
+        }
+        .main-tab-btn.active[data-tab="mapa"] {
+            background: rgba(57, 255, 77, 0.16);
+            border-color: rgba(57, 255, 77, 0.45);
+            color: #39ff4d;
+        }
+
+        /* Estilos Específicos da Aba Mapa 3D */
+        #view-mapa {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            background: #020617;
+            display: none;
+        }
+        #map { width: 100%; height: 100%; }
+        .map-header {
+            position: absolute;
+            top: calc(env(safe-area-inset-top) + 12px);
+            left: 12px; right: 12px; z-index: 100;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px; padding: 10px 14px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .map-controls {
+            position: absolute;
+            top: calc(env(safe-area-inset-top) + 72px);
+            right: 12px; z-index: 100;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .btn-map-ctrl {
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff; width: 44px; height: 44px; border-radius: 14px;
+            font-weight: 800; font-size: 13px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+        .btn-map-ctrl.unlocked { border-color: #10b981; color: #10b981; background: rgba(16,185,129,0.18); }
+        .btn-map-add {
+            position: absolute;
+            bottom: calc(env(safe-area-inset-bottom) + 138px);
+            right: 16px; z-index: 100; width: 56px; height: 56px;
+            border-radius: 50%; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff;
+            border: 2px solid rgba(255,255,255,0.25); display: none; align-items: center; justify-content: center; cursor: pointer;
+            box-shadow: 0 10px 25px rgba(37,99,235,0.55);
+        }
+        .map-bottom-bar {
+            position: absolute;
+            bottom: calc(env(safe-area-inset-bottom) + 76px);
+            left: 12px; right: 12px; z-index: 100;
+            display: flex; gap: 8px; pointer-events: none;
+        }
+        .btn-map-act {
+            flex: 1; pointer-events: auto;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #f8fafc; padding: 11px; border-radius: 14px;
+            font-weight: 700; font-size: 12px;
+            display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
+        }
+        .crosshair { position: absolute; inset: 0; z-index: 150; pointer-events: none; display: none; align-items: center; justify-content: center; flex-direction: column; }
+        .crosshair.active { display: flex; }
+        .crosshair-pin { width: 42px; height: 42px; border: 3px solid #2563eb; border-radius: 50%; background: rgba(37,99,235,0.25); }
+        .crosshair-btn { pointer-events: auto; margin-top: 16px; background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 24px; font-weight: 800; cursor: pointer; }
+        .custom-svg-pin { filter: drop-shadow(0 6px 12px rgba(0,0,0,0.65)); cursor: pointer; }
+
+        .map-type-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+        .map-type-btn { padding: 10px 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); background: #090f22; color: #94a3b8; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; }
+        .map-type-btn.active[data-type="usina"] { background: rgba(245, 158, 11, 0.18); border-color: #f59e0b; color: #f59e0b; }
+        .map-type-btn.active[data-type="cliente"] { background: rgba(16, 185, 129, 0.18); border-color: #10b981; color: #10b981; }
+        .map-type-btn.active[data-type="aluguel"] { background: rgba(59, 130, 246, 0.18); border-color: #3b82f6; color: #3b82f6; }
+        .map-type-btn.active[data-type="software"] { background: rgba(139, 92, 246, 0.18); border-color: #8b5cf6; color: #8b5cf6; }
+
+        .list-group { margin-bottom: 16px; }
+        .list-group-header {
+            font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+            padding: 8px 12px; border-radius: 10px; margin-bottom: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255,255,255,0.12);
+        }
+        .list-group-count { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: rgba(255,255,255,0.1); color: #fff; }
+        .map-list-item { background: #090f22; border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+
+        #toast-notification {
+            position: fixed;
+            bottom: 82px;
+            left: 50%;
+            transform: translate(-50%, 140px);
+            z-index: 3000;
+            transition: transform 0.3s ease;
+            width: max-content;
+            max-width: 92vw;
+        }
+        #toast-notification.show { transform: translate(-50%, 0); }
+    </style>
+</head>
+<body class="bg-solar-bg min-h-screen font-sans selection:bg-solar-neon selection:text-slate-950">
+
+    <div class="page-ambient-bg"></div>
+
+    <!-- NOTIFICAÇÃO FLUTUANTE GLOBAL -->
+    <div id="toast-notification" class="bg-[#111933] border border-solar-neon/60 text-white px-4 py-3 rounded-full shadow-2xl flex items-center gap-2.5 text-xs font-bold">
+        <span class="w-5 h-5 rounded-full bg-solar-neon text-slate-950 flex items-center justify-center text-[10px] flex-shrink-0">
+            <i class="fa-solid fa-bolt"></i>
+        </span>
+        <span id="toast-text" class="truncate">Sincronizando...</span>
+    </div>
+
+    <!-- =========================================================================
+         ABA 1: ENERGIA SOLAR (SOLAR INVEST)
+         ========================================================================= -->
+    <div id="view-solar" class="relative z-10 w-full min-h-screen flex flex-col pb-24">
+        <header class="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-5 pb-3 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <!-- Logotipo SolarInvest -->
+            <div class="flex items-center gap-3 select-none">
+                <svg class="w-11 h-10 flex-shrink-0" viewBox="0 0 64 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g stroke="#FBBF24" stroke-width="2.2" stroke-linecap="round">
+                        <line x1="26" y1="4" x2="26" y2="10"/>
+                        <line x1="12" y1="9" x2="16" y2="14"/>
+                        <line x1="40" y1="9" x2="36" y2="14"/>
+                        <line x1="5" y1="21" x2="11" y2="23"/>
+                        <line x1="47" y1="21" x2="41" y2="23"/>
+                    </g>
+                    <path d="M13 33C13 24.7157 19.268 18 27 18C34.732 18 41 24.7157 41 33H13Z" fill="#FBBF24"/>
+                    <path d="M18 32L47 26L56 44L23 48L18 32Z" fill="#1D4ED8" stroke="#93C5FD" stroke-width="1.5" stroke-linejoin="round"/>
+                    <line x1="27.5" y1="30" x2="33.5" y2="46.5" stroke="#BAE6FD" stroke-width="1.2"/>
+                    <line x1="37.5" y1="28" x2="44.5" y2="45.2" stroke="#BAE6FD" stroke-width="1.2"/>
+                    <line x1="20.5" y1="39.5" x2="51.2" y2="34.5" stroke="#BAE6FD" stroke-width="1.2"/>
+                    <path d="M12 49C24 46 42 46 58 49" stroke="#39FF4D" stroke-width="2.2" stroke-linecap="round"/>
+                </svg>
+                <div>
+                    <div class="text-xl sm:text-2xl font-black tracking-tight leading-none">
+                        <span class="text-white">SOLAR</span><span class="text-amber-400">INVEST</span>
+                    </div>
+                    <p class="text-[9px] sm:text-[10px] font-semibold tracking-[0.22em] text-slate-300 uppercase mt-1">
+                        ENERGIA QUE GERA ECONOMIA
+                    </p>
+                </div>
+            </div>
+
+            <!-- Controles Superiores Solar -->
+            <div class="flex flex-wrap items-center justify-center gap-2.5">
+                <!-- LED Servidor PC -->
+                <button onclick="openSolarServerModal()" id="solar-server-pill" class="server-pill-checking rounded-2xl px-3.5 py-2 flex items-center gap-2.5 transition-all active:scale-95 cursor-pointer">
+                    <span class="relative flex h-3 w-3 flex-shrink-0">
+                        <span id="solar-led-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                        <span id="solar-led-dot" class="relative inline-flex rounded-full h-3 w-3 led-glow-amber"></span>
+                    </span>
+                    <div class="text-left">
+                        <span id="solar-status-label" class="block text-[11px] font-extrabold tracking-wider uppercase text-amber-300 leading-none">VERIFICANDO...</span>
+                        <span id="solar-status-sub" class="block text-[9px] font-medium text-slate-300 leading-tight mt-0.5">Servidor PC</span>
+                    </div>
+                </button>
+
+                <!-- Seletor de Mês -->
+                <div class="top-glass-pill rounded-2xl px-4 py-2 flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-200">
+                        <i class="fa-regular fa-calendar text-sm"></i>
+                    </div>
+                    <div class="text-left">
+                        <span class="block text-[10px] font-medium text-slate-400 leading-tight">Lucro Total do Mês</span>
+                        <div class="flex items-center gap-1.5">
+                            <select id="solar-month-filter" class="bg-transparent text-white font-extrabold text-sm capitalize cursor-pointer focus:outline-none pr-1" onchange="filterSolarByMonth()"></select>
+                            <i class="fa-solid fa-chevron-down text-slate-300 text-[10px] pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botão Engrenagem Central -->
+                <button onclick="openUnifiedConfigModal()" title="Configurações Gerais (Planilhas, FlowNest, Mapa e PIX)" class="top-glass-pill w-11 h-11 rounded-full flex items-center justify-center text-white hover:border-solar-neon/50 active:scale-90 transition-all cursor-pointer">
+                    <i class="fa-solid fa-gear text-sm"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Hero Card Lucro Solar -->
+        <section class="w-full max-w-3xl mx-auto px-4 sm:px-6 mt-2 mb-7">
+            <div class="hero-profit-box px-5 py-5 sm:px-9 sm:py-7 flex items-center justify-between gap-4">
+                <div class="bolt-orb w-14 h-14 sm:w-20 sm:h-20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-bolt text-2xl sm:text-3xl text-solar-neon"></i>
+                </div>
+                <div class="flex-1 text-center min-w-0">
+                    <div class="inline-flex items-center justify-center gap-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] text-slate-200 mb-1">
+                        <i class="fa-solid fa-arrow-trend-up text-solar-neon"></i>
+                        <span id="solar-hero-month-title">LUCRO TOTAL DO MÊS</span>
+                    </div>
+                    <div class="my-1 flex items-baseline justify-center gap-1.5 sm:gap-2">
+                        <span class="text-2xl sm:text-4xl font-extrabold text-slate-100">R$</span>
+                        <span id="solar-total-revenue" class="tabular-nums text-4xl sm:text-6xl font-black text-solar-neon tracking-tight">0,00</span>
+                    </div>
+                    <div class="mt-2 inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/[0.06] border border-white/10 text-[11px] sm:text-xs text-slate-200 font-medium">
+                        <span class="w-4 h-4 rounded-full bg-solar-neon text-slate-950 flex items-center justify-center text-[9px] font-black"><i class="fa-solid fa-check"></i></span>
+                        <span id="solar-month-subtitle">Lucro Líquido da Usina</span>
+                    </div>
+                </div>
+                <div class="hidden sm:flex items-center justify-center flex-shrink-0 w-24 h-20">
+                    <svg viewBox="0 0 110 80" class="w-full h-full" fill="none">
+                        <rect x="8" y="54" width="12" height="20" rx="2" fill="#39FF4D" fill-opacity="0.5"/>
+                        <rect x="26" y="45" width="12" height="29" rx="2" fill="#39FF4D" fill-opacity="0.65"/>
+                        <rect x="44" y="36" width="12" height="38" rx="2" fill="#39FF4D" fill-opacity="0.75"/>
+                        <rect x="62" y="26" width="12" height="48" rx="2" fill="#39FF4D" fill-opacity="0.88"/>
+                        <rect x="80" y="16" width="12" height="58" rx="2" fill="#39FF4D"/>
+                        <path d="M10 48C34 42 62 28 94 8" stroke="#6EE7B7" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M84 7H96V19" stroke="#6EE7B7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lista de Clientes Solar -->
+        <main class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 pb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <i class="fa-solid fa-users text-sky-400 text-lg"></i>
+                    <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Clientes & Faturas</h2>
+                    <span id="solar-cards-badge" class="tabular-nums text-[11px] font-bold bg-white/10 text-slate-300 px-2.5 py-0.5 rounded-full border border-white/10">0</span>
+                    <span class="text-[11px] text-emerald-300 bg-emerald-500/10 border border-emerald-400/25 px-2.5 py-0.5 rounded-full font-medium">
+                        <i class="fa-brands fa-whatsapp mr-1"></i>Clique no nome para enviar PNG + Mensagem
+                    </span>
+                </div>
+                <div class="relative w-full sm:w-64">
+                    <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                    <input type="text" id="solar-search-input" oninput="renderSolarDashboard()" placeholder="Buscar cliente solar..." class="w-full bg-white/[0.06] border border-white/15 rounded-full pl-9 pr-4 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-sky-400/60">
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="solar-cards-container"></div>
+        </main>
+    </div>
+
+    <!-- =========================================================================
+         ABA 2: SOFTWARE / FLOWNEST (IA)
+         ========================================================================= -->
+    <div id="view-software" class="hidden relative z-10 w-full min-h-screen flex-col pb-24">
+        <header class="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-5 pb-3 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <!-- Logotipo FlowNest(IA) -->
+            <div class="flex items-center gap-3 select-none">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-sky-500/20 to-emerald-500/20 border border-sky-400/40 flex items-center justify-center shadow-lg">
+                    <i class="fa-solid fa-layer-group text-xl text-solar-neon"></i>
+                </div>
+                <div>
+                    <div class="text-xl sm:text-2xl font-black tracking-tight leading-none">
+                        <span class="text-white">FLOWNEST</span><span class="text-sky-400">(IA)</span>
+                    </div>
+                    <p class="text-[9px] sm:text-[10px] font-semibold tracking-[0.22em] text-slate-300 uppercase mt-1">
+                        GESTÃO DE LICENÇAS & SAAS
+                    </p>
+                </div>
+            </div>
+
+            <!-- Controles Superiores FlowNest -->
+            <div class="flex flex-wrap items-center justify-center gap-2.5">
+                <button onclick="loadFlowNestData(true)" id="fn-server-pill" class="server-pill-checking rounded-2xl px-3.5 py-2 flex items-center gap-2.5 transition-all active:scale-95 cursor-pointer">
+                    <span class="relative flex h-3 w-3 flex-shrink-0">
+                        <span id="fn-led-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                        <span id="fn-led-dot" class="relative inline-flex rounded-full h-3 w-3 led-glow-amber"></span>
+                    </span>
+                    <div class="text-left">
+                        <span id="fn-status-label" class="block text-[11px] font-extrabold tracking-wider uppercase text-amber-300 leading-none">CONECTANDO...</span>
+                        <span id="fn-status-sub" class="block text-[9px] font-medium text-slate-300 leading-tight mt-0.5">Apps Script FlowNest</span>
+                    </div>
+                </button>
+
+                <div class="top-glass-pill rounded-2xl px-4 py-2 flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-sky-400">
+                        <i class="fa-solid fa-filter text-xs"></i>
+                    </div>
+                    <div class="text-left">
+                        <span class="block text-[10px] font-medium text-slate-400 leading-tight">Filtrar Licenças</span>
+                        <div class="flex items-center gap-1.5">
+                            <select id="fn-status-filter" class="bg-transparent text-white font-extrabold text-sm cursor-pointer focus:outline-none pr-1" onchange="renderFlowNestDashboard()">
+                                <option value="TODOS" class="bg-[#0b1022] text-white">Todos os Clientes</option>
+                                <option value="ATIVO" class="bg-[#0b1022] text-emerald-400">Somente Ativos (Verde)</option>
+                                <option value="OFF" class="bg-[#0b1022] text-red-400">Bloqueados / OFF (Vermelho)</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down text-slate-300 text-[10px] pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botão Engrenagem Central -->
+                <button onclick="openUnifiedConfigModal()" title="Configurações Gerais (Planilhas, FlowNest, Mapa e PIX)" class="top-glass-pill w-11 h-11 rounded-full flex items-center justify-center text-white hover:border-solar-neon/50 active:scale-90 transition-all cursor-pointer">
+                    <i class="fa-solid fa-gear text-sm"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Barra de Controle Remoto Estética KB -->
+        <section id="kb-control-bar" class="hidden w-full max-w-3xl mx-auto px-4 sm:px-6 mt-1 mb-3">
+            <div class="top-glass-pill rounded-2xl px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 border border-sky-400/35">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-400/35 flex items-center justify-center text-sky-400 flex-shrink-0">
+                        <i class="fa-solid fa-car-side text-sm"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-extrabold text-white">Estética KB (App Cliente)</span>
+                            <span id="kb-status-badge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/35">VERIFICANDO...</span>
+                        </div>
+                        <span id="kb-status-subtext" class="block text-[10px] text-slate-400 mt-0.5">Sincronizado via Apps Script Estética KB</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button type="button" onclick="setKbEsteticaStatus('ATIVO')" id="btn-kb-ativo" class="flex-1 sm:flex-initial py-2 px-3.5 rounded-xl text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all active:scale-95 bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 cursor-pointer">
+                        <i class="fa-solid fa-check"></i><span>Ativo</span>
+                    </button>
+                    <button type="button" onclick="setKbEsteticaStatus('BLOQUEADO')" id="btn-kb-bloqueado" class="flex-1 sm:flex-initial py-2 px-3.5 rounded-xl text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all active:scale-95 bg-red-500/15 text-red-300 border border-red-500/40 cursor-pointer">
+                        <i class="fa-solid fa-ban"></i><span>Bloqueado</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hero Card MRR FlowNest -->
+        <section class="w-full max-w-3xl mx-auto px-4 sm:px-6 mt-2 mb-7">
+            <div class="hero-profit-box px-5 py-5 sm:px-9 sm:py-7 flex items-center justify-between gap-4">
+                <div class="bolt-orb w-14 h-14 sm:w-20 sm:h-20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-sack-dollar text-2xl sm:text-3xl text-solar-neon"></i>
+                </div>
+                <div class="flex-1 text-center min-w-0">
+                    <div class="inline-flex items-center justify-center gap-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] text-slate-200 mb-1">
+                        <i class="fa-solid fa-arrow-trend-up text-solar-neon"></i>
+                        <span>RECEITA MENSAL ATIVA (MRR)</span>
+                    </div>
+                    <div class="my-1 flex items-baseline justify-center gap-1.5 sm:gap-2">
+                        <span class="text-2xl sm:text-4xl font-extrabold text-slate-100">R$</span>
+                        <span id="fn-total-revenue" class="tabular-nums text-4xl sm:text-6xl font-black text-solar-neon tracking-tight">0,00</span>
+                    </div>
+                    <div class="mt-2 inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/[0.06] border border-white/10 text-[11px] sm:text-xs text-slate-200 font-medium">
+                        <span class="w-4 h-4 rounded-full bg-solar-neon text-slate-950 flex items-center justify-center text-[9px] font-black"><i class="fa-solid fa-check"></i></span>
+                        <span id="fn-subtitle-display">0 ativos • R$ 0,00 total cadastrado</span>
+                    </div>
+                </div>
+                <div class="hidden sm:flex items-center justify-center flex-shrink-0 w-24 h-20">
+                    <svg viewBox="0 0 110 80" class="w-full h-full" fill="none">
+                        <rect x="8" y="54" width="12" height="20" rx="2" fill="#39FF4D" fill-opacity="0.5"/>
+                        <rect x="26" y="45" width="12" height="29" rx="2" fill="#39FF4D" fill-opacity="0.65"/>
+                        <rect x="44" y="36" width="12" height="38" rx="2" fill="#39FF4D" fill-opacity="0.75"/>
+                        <rect x="62" y="26" width="12" height="48" rx="2" fill="#39FF4D" fill-opacity="0.88"/>
+                        <rect x="80" y="16" width="12" height="58" rx="2" fill="#39FF4D"/>
+                        <path d="M10 48C34 42 62 28 94 8" stroke="#38BDF8" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M84 7H96V19" stroke="#38BDF8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lista Assinantes FlowNest -->
+        <main class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 pb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <i class="fa-solid fa-users text-sky-400 text-lg"></i>
+                    <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Assinantes & Licenças</h2>
+                    <span id="fn-cards-badge" class="tabular-nums text-[11px] font-bold bg-white/10 text-slate-300 px-2.5 py-0.5 rounded-full border border-white/10">0</span>
+                </div>
+                <div class="flex items-center gap-2.5 w-full sm:w-auto">
+                    <button onclick="openFnNewClientModal()" class="bg-solar-neon hover:bg-emerald-400 active:scale-95 text-slate-950 font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-full flex items-center justify-center gap-1.5 shadow-[0_0_18px_rgba(57,255,77,0.35)] transition-all flex-shrink-0 cursor-pointer">
+                        <i class="fa-solid fa-user-plus text-xs"></i><span>Novo Cliente</span>
+                    </button>
+                    <div class="relative flex-1 sm:w-60">
+                        <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                        <input type="text" id="fn-search-input" oninput="renderFlowNestDashboard()" placeholder="Buscar assinante..." class="w-full bg-white/[0.06] border border-white/15 rounded-full pl-9 pr-4 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-sky-400/60">
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="fn-cards-container"></div>
+        </main>
+    </div>
+
+    <!-- =========================================================================
+         ABA 3: MAPA 3D (USINAS, CLIENTES, IMÓVEIS & FLOWNEST IA)
+         ========================================================================= -->
+    <div id="view-mapa">
+        <div id="map"></div>
+
+        <!-- Controles do Mapa (3D e Lock) -->
+        <div class="map-controls">
+            <button class="btn-map-ctrl" id="btn3d">3D</button>
+            <button class="btn-map-ctrl" id="btnAdminAuth" title="Área do Empresário"><i data-lucide="lock"></i></button>
+        </div>
+
+        <!-- Mira de Precisão -->
+        <div class="crosshair" id="crosshair">
+            <div class="crosshair-pin"></div>
+            <button class="crosshair-btn" id="btnConfirmCrosshair"><i data-lucide="check"></i> Confirmar Ponto Aqui</button>
+        </div>
+
+        <!-- Botão (+) -> Apenas para Empresário Logado -->
+        <button class="btn-map-add" id="btnToggleCrosshair"><i data-lucide="plus" style="width:26px;height:26px;"></i></button>
+
+        <!-- Top Bar do Mapa -->
+        <div class="map-header">
+            <div class="flex items-center gap-2 font-extrabold text-sm select-none cursor-pointer" id="brandBtn">
+                <i data-lucide="sun" class="text-amber-400 w-4 h-4"></i>
+                <span>Mapa 3D</span>
+                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-400 border border-amber-500/40 hidden" id="modeBadge">ADM</span>
+                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-red-500/20 text-red-400 border border-red-500/40 hidden" id="offlineBadge">OFFLINE</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <button class="btn-map-act !py-1.5 !px-2.5 !text-[11px]" id="btnSummary" style="display:none;"><i data-lucide="pie-chart" class="w-3.5 h-3.5"></i> Resumo</button>
+                <button onclick="openUnifiedConfigModal()" class="btn-map-act !py-1.5 !px-2.5 !text-[11px]" title="Configurar URL do Mapa, FlowNest e Solar"><i class="fa-solid fa-gear"></i></button>
+            </div>
+        </div>
+
+        <!-- Bottom Actions do Mapa -->
+        <div class="map-bottom-bar">
+            <button class="btn-map-act" id="btnList"><i data-lucide="list" class="w-4 h-4"></i> Pontos</button>
+            <button class="btn-map-act" id="btnSync"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Sincronizar</button>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         BARRA DE NAVEGAÇÃO PRINCIPAL FIXA (3 ABAS)
+         ========================================================================= -->
+    <nav class="main-tab-bar">
+        <button class="main-tab-btn active" data-tab="solar" onclick="switchMainTab('solar')">
+            <i class="fa-solid fa-solar-panel"></i>
+            <span>Energia Solar</span>
+        </button>
+        <button class="main-tab-btn" data-tab="software" onclick="switchMainTab('software')">
+            <i class="fa-solid fa-microchip"></i>
+            <span>FlowNest (IA)</span>
+        </button>
+        <button class="main-tab-btn" data-tab="mapa" onclick="switchMainTab('mapa')">
+            <i class="fa-solid fa-map-location-dot"></i>
+            <span>Mapa 3D</span>
+        </button>
+    </nav>
+
+    <!-- =========================================================================
+         MODAIS UNIFICADOS (CONFIGURAÇÃO CENTRAL + SOLAR + FLOWNEST + MAPA)
+         ========================================================================= -->
+
+    <!-- MODAL DE CONFIGURAÇÕES CENTRALIZADO (ENGRENAGEM) -->
+    <div class="modal-overlay" id="unified-config-overlay" onclick="closeUnifiedConfigModal()"></div>
+    <div class="bottom-sheet" id="unified-config-sheet">
+        <div class="modal-pill"></div>
+        <div class="flex justify-between items-center mb-3">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-gear text-solar-neon"></i>
+                <h3 class="text-xl font-extrabold text-white">Configurações Gerais</h3>
+            </div>
+            <button onclick="closeUnifiedConfigModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-300">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <p class="text-[11px] text-emerald-300/90 bg-emerald-500/10 border border-emerald-500/25 rounded-xl px-3 py-2 mb-4 leading-relaxed">
+            <i class="fa-solid fa-shield-halved mr-1"></i>
+            Todas as URLs e chaves ficam salvas <strong>somente na memória deste aparelho</strong> (localStorage).
+        </p>
+
+        <div class="space-y-4">
+            <!-- 1. ENERGIA SOLAR -->
+            <div class="bg-white/[0.03] border border-amber-500/25 rounded-2xl p-3.5 space-y-2.5">
+                <span class="block text-xs font-extrabold text-amber-400 uppercase tracking-wider">
+                    <i class="fa-solid fa-solar-panel mr-1"></i> 1. Aba Energia Solar (Solar Invest)
+                </span>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Link ou ID da Planilha Google Sheets</label>
+                    <input type="text" id="cfg-solar-sheet-id" placeholder="Cole o Link ou ID da Planilha..." class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Repositório Monitor Servidor PC (usuario/repo)</label>
+                    <input type="text" id="cfg-solar-github-repo" placeholder="Ex: junim887876/Aposta" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-2 text-xs font-mono text-white focus:outline-none focus:border-amber-400">
+                </div>
+            </div>
+
+            <!-- 2. FLOWNEST (IA) -->
+            <div class="bg-white/[0.03] border border-sky-400/25 rounded-2xl p-3.5 space-y-2.5">
+                <span class="block text-xs font-extrabold text-sky-400 uppercase tracking-wider">
+                    <i class="fa-solid fa-microchip mr-1"></i> 2. Aba FlowNest (IA) — Licenças Software
+                </span>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">URL Google Apps Script (FlowNest IA)</label>
+                    <input type="url" id="cfg-fn-appscript-url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white focus:outline-none focus:border-sky-400">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">URL Google Apps Script — Estética KB (Opcional)</label>
+                    <input type="url" id="cfg-kb-appscript-url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-2 text-xs font-mono text-white focus:outline-none focus:border-sky-400">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Link de Acesso Portal FlowNest (Enviado no WhatsApp)</label>
+                    <input type="url" id="cfg-fn-portal-url" placeholder="https://seusistema.com.br" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-sky-400">
+                </div>
+            </div>
+
+            <!-- 3. MAPA 3D -->
+            <div class="bg-white/[0.03] border border-emerald-400/25 rounded-2xl p-3.5 space-y-2.5">
+                <span class="block text-xs font-extrabold text-solar-neon uppercase tracking-wider">
+                    <i class="fa-solid fa-map-location-dot mr-1"></i> 3. Aba Mapa 3D (Sincronização Offline/Online)
+                </span>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">URL Google Apps Script (Planilha do Mapa 3D)</label>
+                    <input type="url" id="cfg-map-sheet-url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white focus:outline-none focus:border-solar-neon">
+                </div>
+            </div>
+
+            <!-- 4. PIX OFICIAL -->
+            <div class="bg-white/[0.03] border border-white/15 rounded-2xl p-3.5 space-y-2.5">
+                <span class="block text-xs font-extrabold text-white uppercase tracking-wider">
+                    <i class="fa-brands fa-pix text-teal-400 mr-1"></i> 4. Código PIX Copia e Cola (QR Code das Faturas)
+                </span>
+                <div>
+                    <textarea id="cfg-pix-code" rows="2" placeholder="00020126330014br.gov.bcb.pix..." class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-2 text-xs font-mono text-white focus:outline-none focus:border-solar-neon"></textarea>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Modo do Valor no QR Code PIX</label>
+                    <select id="cfg-pix-mode" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white font-semibold focus:outline-none">
+                        <option value="official_with_amount">Injetar Valor da Fatura/Mensalidade Automaticamente</option>
+                        <option value="official_exact">Usar Código PIX Oficial Exato (Sem valor fixo)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button onclick="saveUnifiedConfig()" class="flex-1 py-3.5 bg-solar-neon text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider cursor-pointer">
+                    Salvar Todas as Configurações
+                </button>
+                <button onclick="clearUnifiedConfig()" class="py-3.5 px-4 bg-red-500/15 text-red-400 border border-red-500/30 font-bold rounded-xl text-xs uppercase cursor-pointer">
+                    Limpar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALHES SERVIDOR PC (ABA SOLAR) -->
+    <div class="modal-overlay" id="solar-server-overlay" onclick="closeSolarServerModal()"></div>
+    <div class="bottom-sheet" id="solar-server-sheet">
+        <div class="modal-pill"></div>
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-extrabold text-white">Servidor Django & Robô</h3>
+            <button onclick="closeSolarServerModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-300"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="solar-modal-server-banner" class="rounded-2xl p-4 mb-4 border border-white/10 bg-white/[0.04] text-center">
+            <span id="solar-modal-big-status" class="text-lg font-black uppercase text-amber-300">VERIFICANDO...</span>
+            <p id="solar-modal-server-desc" class="text-xs text-slate-300 mt-1">Consultando sinal...</p>
+        </div>
+        <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4 space-y-2 text-xs mb-4">
+            <div class="flex justify-between"><span>Último Sinal:</span><strong id="srv-last-seen">--</strong></div>
+            <div class="flex justify-between"><span>Tempo Decorrido:</span><strong id="srv-elapsed" class="text-sky-300">--</strong></div>
+            <div class="flex justify-between"><span>Atividade:</span><strong id="srv-robo-activity">--</strong></div>
+            <div class="flex justify-between"><span>Faturas Pendentes:</span><strong id="srv-ucs-pending" class="text-amber-300">--</strong></div>
+        </div>
+        <button onclick="checkSolarServerHealth(true)" class="w-full py-3.5 bg-sky-500/20 border border-sky-400/40 text-sky-200 font-extrabold rounded-2xl text-xs uppercase">Atualizar Status Agora</button>
+    </div>
+
+    <!-- MODAL DETALHES FATURA SOLAR -->
+    <div class="modal-overlay" id="solar-modal-overlay" onclick="closeSolarInvoiceModal()"></div>
+    <div class="bottom-sheet" id="solar-bottom-sheet">
+        <div class="modal-pill"></div>
+        <div class="flex justify-between items-start mb-4 gap-3">
+            <div>
+                <h3 id="solar-modal-cliente-nome" class="text-2xl font-extrabold capitalize text-white">Cliente</h3>
+                <p id="solar-modal-mes-sub" class="text-xs text-slate-400 mt-0.5">Fatura</p>
+                <p id="solar-modal-vencimento" class="text-xs font-semibold text-sky-300 mt-1">Vencimento: --</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <span id="solar-modal-status" class="text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">STATUS</span>
+                <button onclick="closeSolarInvoiceModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-300"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+        </div>
+        <div id="solar-modal-body" class="space-y-3 mb-4 text-xs">
+            <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4 space-y-2">
+                <div class="flex justify-between"><span>Consumo Medido:</span><strong id="solar-m-kwh">0 kWh</strong></div>
+                <div class="flex justify-between"><span>Valor Energia (R$ 0,81/kWh):</span><strong id="solar-m-ckwh">R$ 0,00</strong></div>
+                <div class="flex justify-between"><span>Iluminação Pública (CIP):</span><strong id="solar-m-cip">R$ 0,00</strong></div>
+                <div class="flex justify-between text-slate-400 border-t border-white/10 pt-2"><span>Sem Desconto:</span><span id="solar-m-bruto" class="line-through text-red-400">R$ 0,00</span></div>
+                <div class="flex justify-between text-emerald-400"><span>Desconto (20% OFF):</span><strong id="solar-m-desc">- R$ 0,00</strong></div>
+                <div class="flex justify-between text-sm font-extrabold border-t border-white/15 pt-2"><span>Valor a Pagar:</span><span id="solar-m-fat" class="text-amber-300">R$ 0,00</span></div>
+            </div>
+            <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4 space-y-2">
+                <div class="flex justify-between"><span>Custo Geração Usina:</span><strong id="solar-m-cusina" class="text-red-400">- R$ 0,00</strong></div>
+                <div class="flex justify-between font-bold border-t border-white/10 pt-2"><span>Custo Total Usina:</span><span id="solar-m-ctotal" class="text-red-400">- R$ 0,00</span></div>
+            </div>
+        </div>
+        <div class="bg-emerald-500/15 border border-emerald-400/40 rounded-2xl p-4 text-center mb-4">
+            <span class="text-[11px] text-emerald-400 font-bold uppercase block">Seu Lucro Líquido Final</span>
+            <span id="solar-m-lucro" class="tabular-nums text-3xl font-black text-solar-neon">R$ 0,00</span>
+        </div>
+        <div id="solar-m-actions" class="grid grid-cols-1 gap-2">
+            <button id="solar-btn-wpp" class="w-full py-3.5 bg-[#25D366] text-slate-950 font-black rounded-2xl text-xs uppercase flex items-center justify-center gap-2"><i class="fa-brands fa-whatsapp text-base"></i><span>Enviar Fatura PNG + Mensagem</span></button>
+            <button id="solar-btn-dl" class="w-full py-3 bg-white/10 text-white font-bold rounded-2xl text-xs uppercase flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i><span>Apenas Baixar PNG</span></button>
+        </div>
+    </div>
+
+    <!-- MODAL NOVO CLIENTE FLOWNEST -->
+    <div class="modal-overlay" id="fn-new-overlay" onclick="closeFnNewClientModal()"></div>
+    <div class="bottom-sheet" id="fn-new-sheet">
+        <div class="modal-pill"></div>
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-extrabold text-white">Cadastrar Cliente FlowNest (IA)</h3>
+            <button onclick="closeFnNewClientModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-300"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form id="fn-new-form" onsubmit="submitFnNewClient(event)" class="space-y-3 text-xs">
+            <div class="grid grid-cols-2 gap-2.5">
+                <div><label class="block font-bold text-solar-neon uppercase mb-1">Nome / Login *</label><input type="text" id="fn-new-nome" required class="w-full bg-[#090f22] border border-white/20 rounded-xl px-3 py-2.5 text-white"></div>
+                <div><label class="block font-bold text-slate-300 uppercase mb-1">Empresa</label><input type="text" id="fn-new-empresa" class="w-full bg-[#090f22] border border-white/20 rounded-xl px-3 py-2.5 text-white"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-2.5">
+                <div><label class="block font-bold text-slate-300 uppercase mb-1">Responsável</label><input type="text" id="fn-new-resp" class="w-full bg-[#090f22] border border-white/20 rounded-xl px-3 py-2.5 text-white"></div>
+                <div><label class="block font-bold text-slate-300 uppercase mb-1">WhatsApp</label><input type="tel" id="fn-new-tel" class="w-full bg-[#090f22] border border-white/20 rounded-xl px-3 py-2.5 text-white"></div>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+                <div><label class="block font-bold text-slate-300 uppercase mb-1">Dia Venc.</label><input type="number" id="fn-new-dia" min="1" max="31" class="w-full bg-[#090f22] border border-white/20 rounded-xl px-3 py-2 text-white"></div>
+                <div><label class="block font-bold text-slate-300 uppercase mb-1">Valor (R$)</label><input type="number" id="fn-new-valor" step="0.01" class="w-full bg-[#090f22] border border-white/20 rounded-xl px-3 py-2 text-solar-neon font-bold"></div>
+                <div><label class="block font-bold text-slate-300 uppercase mb-1">Status</label><select id="fn-new-status" class="w-full bg-[#090f22] border border-white/20 rounded-xl px-2 py-2 text-emerald-400 font-bold"><option value="ATIVO">ATIVO</option><option value="OFF">OFF</option></select></div>
+            </div>
+            <button type="submit" id="fn-btn-submit-new" class="w-full py-3.5 bg-solar-neon text-slate-950 font-black rounded-2xl uppercase">Cadastrar na Planilha</button>
+        </form>
+    </div>
+
+    <!-- MODAL EDITAR ASSINANTE FLOWNEST -->
+    <div class="modal-overlay" id="fn-edit-overlay" onclick="closeFnEditModal()"></div>
+    <div class="bottom-sheet" id="fn-edit-sheet">
+        <div class="modal-pill"></div>
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <h3 id="fn-edit-nome" class="text-2xl font-extrabold text-white">Assinante</h3>
+                <p id="fn-edit-empresa" class="text-xs text-slate-400">FlowNest(IA)</p>
+            </div>
+            <button onclick="closeFnEditModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-300"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="grid grid-cols-2 gap-2.5 mb-4">
+            <button id="fn-edit-btn-ativar" class="py-3 rounded-xl font-black text-xs uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/50">Ativar (ATIVO)</button>
+            <button id="fn-edit-btn-off" class="py-3 rounded-xl font-black text-xs uppercase bg-red-500/20 text-red-300 border border-red-500/50">Bloquear (OFF)</button>
+        </div>
+        <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4 space-y-3 mb-4 text-xs">
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="block font-bold text-slate-300 uppercase mb-1">Dia Vencimento</label><input type="number" id="fn-edit-dia" min="1" max="31" class="w-full bg-[#090f22] border border-white/20 rounded-xl px-3 py-2.5 text-white font-bold"></div>
+                <div><label class="block font-bold text-slate-300 uppercase mb-1">Mensalidade (R$)</label><input type="number" id="fn-edit-valor" step="0.01" class="w-full bg-[#090f22] border border-white/20 rounded-xl px-3 py-2.5 text-solar-neon font-bold"></div>
+            </div>
+            <button id="fn-edit-btn-salvar" class="w-full py-3 bg-sky-500 text-slate-950 font-black rounded-xl uppercase">Salvar Alterações</button>
+        </div>
+        <div class="grid grid-cols-1 gap-2">
+            <button id="fn-edit-btn-wpp" class="w-full py-3.5 bg-[#25D366] text-slate-950 font-black rounded-2xl text-xs uppercase flex items-center justify-center gap-2"><i class="fa-brands fa-whatsapp text-base"></i><span>Enviar Cobrança PNG + Mensagem</span></button>
+            <button id="fn-edit-btn-dl" class="w-full py-3 bg-white/10 text-white font-bold rounded-2xl text-xs uppercase">Apenas Baixar PNG</button>
+            <button id="fn-edit-btn-remover" class="w-full py-3 bg-red-500/15 border border-red-500/40 text-red-400 font-extrabold rounded-2xl text-xs uppercase">Remover Assinante</button>
+        </div>
+    </div>
+
+    <!-- MODAIS DO MAPA 3D -->
+    <div class="modal-overlay" id="map-modal-overlay" onclick="closeMapModals()"></div>
+
+    <!-- Modal Senha Empresário Mapa -->
+    <div class="bottom-sheet" id="modalAuth">
+        <div class="modal-pill"></div>
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-extrabold">Área Restrita (Empresário)</h3>
+            <button onclick="closeMapModals()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+        <input type="password" id="adminPasswordInput" placeholder="Digite sua senha (1234)..." class="w-full bg-[#090f22] border border-white/15 rounded-xl px-4 py-3 text-base text-white mb-3">
+        <button id="btnCheckAuth" class="w-full py-3.5 bg-blue-600 text-white font-extrabold rounded-xl">Acessar Modo Empresário</button>
+    </div>
+
+    <!-- Modal Visitante Mapa -->
+    <div class="bottom-sheet" id="modalPublicView">
+        <div class="modal-pill"></div>
+        <div class="flex justify-between items-center mb-4">
+            <h3 id="pubTitle" class="text-lg font-extrabold">Detalhes do Ponto</h3>
+            <button onclick="closeMapModals()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+        <div class="bg-[#090f22] border border-white/10 rounded-2xl p-4 mb-3">
+            <div id="pubTypeLabel" class="text-xs font-extrabold text-slate-400 uppercase">INFORMAÇÃO</div>
+            <div id="pubName" class="text-xl font-extrabold text-white mt-1">-</div>
+            <div id="pubKwh" class="text-base font-bold text-amber-400 mt-2">-</div>
+        </div>
+        <button id="btnPubMaps" class="w-full py-3.5 bg-emerald-500 text-slate-950 font-extrabold rounded-xl flex items-center justify-center gap-2"><i data-lucide="navigation" class="w-4 h-4"></i> Abrir no Google Maps</button>
+    </div>
+
+    <!-- Modal Cadastro / Edição Ponto Mapa -->
+    <div class="bottom-sheet" id="modalForm">
+        <div class="modal-pill"></div>
+        <div class="flex justify-between items-center mb-4">
+            <h3 id="formTitle" class="text-lg font-extrabold">Novo Cadastro</h3>
+            <button onclick="closeMapModals()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+
+        <div class="map-type-selector">
+            <div class="map-type-btn active" data-type="usina"><i data-lucide="sun" class="w-4 h-4"></i> Usina</div>
+            <div class="map-type-btn" data-type="cliente"><i data-lucide="zap" class="w-4 h-4"></i> Cliente Solar</div>
+            <div class="map-type-btn" data-type="aluguel"><i data-lucide="home" class="w-4 h-4"></i> Imóvel</div>
+            <div class="map-type-btn" data-type="software"><i data-lucide="cpu" class="w-4 h-4"></i> FlowNest (IA)</div>
+        </div>
+
+        <input type="hidden" id="pointId"><input type="hidden" id="pointLat"><input type="hidden" id="pointLng">
+
+        <div class="space-y-3 text-xs">
+            <div><label id="lblName" class="block font-bold text-slate-400 uppercase mb-1">Nome do Ponto</label><input type="text" id="pointName" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-3 text-base text-white"></div>
+
+            <div id="locationTypeGroup"><label class="block font-bold text-slate-400 uppercase mb-1">Localização</label>
+                <select id="pointLocationType" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-3 text-base text-white">
+                    <option value="urbana">Urbana (Iluminação Pública R$ 21,00)</option>
+                    <option value="rural">Rural (Isento Iluminação Pública)</option>
+                </select>
+            </div>
+
+            <div id="ownershipGroup"><label class="block font-bold text-slate-400 uppercase mb-1">Propriedade</label>
+                <select id="pointOwnership" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-3 text-base text-white">
+                    <option value="Proprio">100% Próprio</option>
+                    <option value="Sociedade">Sociedade (Com Sócio/Sogro)</option>
+                </select>
+            </div>
+
+            <div id="usinaSourceGroup" style="display:none;"><label class="block font-bold text-slate-400 uppercase mb-1">Usina Fornecedora</label>
+                <select id="pointSourceUsina" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-3 text-base text-white"></select>
+            </div>
+
+            <div id="financeCalcCard" style="display:none;" class="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-3.5 space-y-1.5">
+                <div class="font-extrabold text-emerald-400 uppercase">📊 Demonstrativo Financeiro</div>
+                <div class="flex justify-between"><span>Faturamento Bruto:</span><strong id="calcBruto">R$ 0,00</strong></div>
+                <div class="flex justify-between"><span>Custo Produção (0,17/kWh):</span><strong id="calcCustoProd">R$ 0,00</strong></div>
+                <div class="flex justify-between"><span>Iluminação Pública:</span><strong id="calcIlum">R$ 0,00</strong></div>
+                <div class="flex justify-between text-sm font-extrabold text-solar-neon border-t border-white/10 pt-1.5"><span>Lucro Líquido:</span><strong id="calcLucro">R$ 0,00</strong></div>
+            </div>
+
+            <div class="flex gap-2.5">
+                <div id="kwhGroup" class="flex-1"><label id="lblKwh" class="block font-bold text-slate-400 uppercase mb-1">kWh / Mês</label><input type="number" id="pointKwh" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-3 text-base text-white"></div>
+                <div id="valGroup" class="flex-1"><label id="lblVal" class="block font-bold text-slate-400 uppercase mb-1">Valor / Desc.</label><input type="number" id="pointVal" value="20" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-3 text-base text-white"></div>
+            </div>
+
+            <div id="rentalStatusGroup" style="display:none;"><label id="lblStatus" class="block font-bold text-slate-400 uppercase mb-1">Status</label>
+                <select id="pointStatus" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-3 text-base text-white"></select>
+            </div>
+
+            <div><label class="block font-bold text-slate-400 uppercase mb-1">Observações</label><textarea id="pointNotes" rows="2" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-2.5 text-base text-white"></textarea></div>
+
+            <button id="btnSavePoint" class="w-full py-3.5 bg-blue-600 text-white font-extrabold rounded-xl text-sm">Salvar Localmente e na Planilha</button>
+            <button id="btnFormMaps" class="w-full py-3 bg-emerald-500 text-slate-950 font-extrabold rounded-xl text-sm flex items-center justify-center gap-2"><i data-lucide="navigation" class="w-4 h-4"></i> Abrir no Google Maps</button>
+            <button id="btnDeletePoint" style="display:none;" class="w-full py-3 bg-red-500/15 border border-red-500/30 text-red-400 font-bold rounded-xl text-sm">Excluir Ponto</button>
+        </div>
+    </div>
+
+    <!-- Modal Gestão Mapa -->
+    <div class="bottom-sheet" id="modalGestaoView">
+        <div class="modal-pill"></div>
+        <div class="flex justify-between items-center mb-4">
+            <h3 id="gestaoClientName" class="text-lg font-extrabold">Faturamento do Cliente</h3>
+            <button onclick="closeMapModals()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+        <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 space-y-2 text-xs mb-4">
+            <div class="flex justify-between"><span>Consumo:</span><strong id="gConsumo">0 kWh</strong></div>
+            <div class="flex justify-between"><span>Usina:</span><strong id="gUsina">-</strong></div>
+            <div class="flex justify-between"><span>Localização:</span><strong id="gLocal">Urbana</strong></div>
+            <div class="flex justify-between border-t border-white/10 pt-2"><span>Faturamento Bruto:</span><strong id="gBruto" class="text-sky-400">R$ 0,00</strong></div>
+            <div class="flex justify-between"><span>Custo Produção:</span><strong id="gCustoProd" class="text-red-400">R$ 0,00</strong></div>
+            <div class="flex justify-between"><span>Iluminação Pública:</span><strong id="gIlum" class="text-red-400">R$ 0,00</strong></div>
+            <div class="flex justify-between text-base font-black text-solar-neon border-t border-white/10 pt-2"><span>LUCRO LÍQUIDO:</span><strong id="gLucro">R$ 0,00</strong></div>
+        </div>
+        <div class="space-y-2">
+            <button id="btnGestaoEditDirect" class="w-full py-3 bg-white/10 text-white font-bold rounded-xl text-xs uppercase">Editar Informações</button>
+            <button id="btnGestaoMaps" class="w-full py-3.5 bg-emerald-500 text-slate-950 font-extrabold rounded-xl text-xs uppercase flex items-center justify-center gap-2"><i data-lucide="navigation" class="w-4 h-4"></i> Abrir no Google Maps</button>
+        </div>
+    </div>
+
+    <!-- Modal Lista Separada por Usinas e Categorias -->
+    <div class="bottom-sheet" id="modalList">
+        <div class="modal-pill"></div>
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-extrabold">Pontos Cadastrados</h3>
+            <button onclick="closeMapModals()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+        <div id="pointsContainer"></div>
+    </div>
+
+    <!-- Modal Resumo Consolidado Mapa -->
+    <div class="bottom-sheet" id="modalSummary">
+        <div class="modal-pill"></div>
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-extrabold">Balanço Geral (Mapa)</h3>
+            <button onclick="closeMapModals()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+        <div id="summaryContent" class="text-xs"></div>
+    </div>
+
+    <script>
+        /* =====================================================================
+           CHAVES DE ARMAZENAMENTO UNIFICADAS (LOCALSTORAGE)
+           ===================================================================== */
+        const KEYS = {
+            SOLAR_SHEET_ID: 'solarinvest_sheet_id',
+            SOLAR_GITHUB_REPO: 'solarinvest_github_monitor_repo',
+            FN_APPSCRIPT_URL: 'flownest_appscript_url_v1',
+            KB_APPSCRIPT_URL: 'flownest_kb_appscript_url_v1',
+            FN_PORTAL_URL: 'flownest_portal_url_v1',
+            MAP_SHEET_URL: 'solar_sheet_url',
+            MAP_DB: 'solar_db',
+            MAP_QUEUE: 'solar_pending_queue',
+            MAP_VIEWPORT: 'solar_map_viewport',
+            PIX_CODE: 'unified_pix_code_v1',
+            PIX_MODE: 'unified_pix_mode_v1'
+        };
+
+        const DEFAULT_PIX = '00020126330014br.gov.bcb.pix0111709573141165204000053039865802BR5925Jose Elvecio Lopes Junior6009Sao Paulo62230519daqr2210911956886966304DDE3';
+        const DEFAULT_REPO = 'junim887876/Aposta';
+        const SOLAR_PORTAL_URL = 'https://junim887876.github.io/Energia/';
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast-notification');
+            document.getElementById('toast-text').innerText = msg;
+            toast.classList.add('show');
+            clearTimeout(window._toastTimer);
+            window._toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
+        }
+
+        function escapeHtml(str) {
+            return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function openSheetModal(overlayId, sheetId) {
+            const overlay = document.getElementById(overlayId);
+            const sheet = document.getElementById(sheetId);
+            overlay.style.display = 'block';
+            requestAnimationFrame(() => {
+                overlay.style.opacity = '1';
+                sheet.style.transform = 'translate(-50%, 0)';
+            });
+        }
+
+        function closeSheetModal(overlayId, sheetId) {
+            const overlay = document.getElementById(overlayId);
+            const sheet = document.getElementById(sheetId);
+            sheet.style.transform = 'translate(-50%, 100%)';
+            overlay.style.opacity = '0';
+            setTimeout(() => { overlay.style.display = 'none'; }, 300);
+        }
+
+        /* =====================================================================
+           NAVEGAÇÃO ENTRE AS 3 ABAS (SOLAR / FLOW-NEST / MAPA 3D)
+           ===================================================================== */
+        let activeMainTab = 'solar';
+        let mapInitialized = false;
+
+        function switchMainTab(tabName) {
+            activeMainTab = tabName;
+            document.querySelectorAll('.main-tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tabName);
+            });
+
+            document.getElementById('view-solar').style.display = (tabName === 'solar') ? 'flex' : 'none';
+            document.getElementById('view-software').style.display = (tabName === 'software') ? 'flex' : 'none';
+            document.getElementById('view-mapa').style.display = (tabName === 'mapa') ? 'block' : 'none';
+
+            if (tabName === 'mapa' && map) {
+                setTimeout(() => {
+                    map.resize();
+                    renderMarkers();
+                }, 60);
+            }
+        }
+
+        /* =====================================================================
+           MODAL CENTRALIZADO DA ENGRENAGEM (TODAS AS CONFIGURAÇÕES)
+           ===================================================================== */
+        function extractSheetId(input) {
+            if (!input) return '';
+            const match = input.match(/\/d\/([a-zA-Z0-9-_]+)/);
+            return match ? match[1] : input.trim();
+        }
+
+        function openUnifiedConfigModal() {
+            document.getElementById('cfg-solar-sheet-id').value = localStorage.getItem(KEYS.SOLAR_SHEET_ID) || '';
+            document.getElementById('cfg-solar-github-repo').value = localStorage.getItem(KEYS.SOLAR_GITHUB_REPO) || DEFAULT_REPO;
+            document.getElementById('cfg-fn-appscript-url').value = localStorage.getItem(KEYS.FN_APPSCRIPT_URL) || '';
+            document.getElementById('cfg-kb-appscript-url').value = localStorage.getItem(KEYS.KB_APPSCRIPT_URL) || '';
+            document.getElementById('cfg-fn-portal-url').value = localStorage.getItem(KEYS.FN_PORTAL_URL) || '';
+            document.getElementById('cfg-map-sheet-url').value = localStorage.getItem(KEYS.MAP_SHEET_URL) || '';
+            document.getElementById('cfg-pix-code').value = localStorage.getItem(KEYS.PIX_CODE) || localStorage.getItem('solarinvest_pix_code_v2') || DEFAULT_PIX;
+            document.getElementById('cfg-pix-mode').value = localStorage.getItem(KEYS.PIX_MODE) || 'official_with_amount';
+
+            openSheetModal('unified-config-overlay', 'unified-config-sheet');
+        }
+
+        function closeUnifiedConfigModal() {
+            closeSheetModal('unified-config-overlay', 'unified-config-sheet');
+        }
+
+        function saveUnifiedConfig() {
+            const solarId = extractSheetId(document.getElementById('cfg-solar-sheet-id').value);
+            const repo = document.getElementById('cfg-solar-github-repo').value.trim();
+            const fnUrl = document.getElementById('cfg-fn-appscript-url').value.trim();
+            const kbUrl = document.getElementById('cfg-kb-appscript-url').value.trim();
+            const fnPortal = document.getElementById('cfg-fn-portal-url').value.trim();
+            const mapUrl = document.getElementById('cfg-map-sheet-url').value.trim();
+            const pixCode = document.getElementById('cfg-pix-code').value.trim() || DEFAULT_PIX;
+            const pixMode = document.getElementById('cfg-pix-mode').value;
+
+            if (solarId) localStorage.setItem(KEYS.SOLAR_SHEET_ID, solarId); else localStorage.removeItem(KEYS.SOLAR_SHEET_ID);
+            if (repo) localStorage.setItem(KEYS.SOLAR_GITHUB_REPO, repo);
+            if (fnUrl) localStorage.setItem(KEYS.FN_APPSCRIPT_URL, fnUrl); else localStorage.removeItem(KEYS.FN_APPSCRIPT_URL);
+            if (kbUrl) localStorage.setItem(KEYS.KB_APPSCRIPT_URL, kbUrl); else localStorage.removeItem(KEYS.KB_APPSCRIPT_URL);
+            if (fnPortal) localStorage.setItem(KEYS.FN_PORTAL_URL, fnPortal); else localStorage.removeItem(KEYS.FN_PORTAL_URL);
+            if (mapUrl) localStorage.setItem(KEYS.MAP_SHEET_URL, mapUrl); else localStorage.removeItem(KEYS.MAP_SHEET_URL);
+
+            localStorage.setItem(KEYS.PIX_CODE, pixCode);
+            localStorage.setItem(KEYS.PIX_MODE, pixMode);
+
+            scriptUrl = mapUrl;
+            closeUnifiedConfigModal();
+            showToast('Configurações salvas! Atualizando módulos...');
+
+            if (solarId) loadSolarAdminData();
+            checkSolarServerHealth(false);
+            if (fnUrl) loadFlowNestData(false);
+            syncKbEsteticaStatus();
+            if (mapUrl && navigator.onLine) syncMapFromSheet(true);
+        }
+
+        function clearUnifiedConfig() {
+            if (confirm('Deseja apagar todas as URLs e IDs de planilhas salvos neste navegador?')) {
+                Object.values(KEYS).forEach(k => {
+                    if (k !== KEYS.MAP_DB) localStorage.removeItem(k);
+                });
+                location.reload();
+            }
+        }
+
+        /* =====================================================================
+           GERADOR DE PIX & CRC16 COMPARTILHADO (SOLAR + FLOWNEST)
+           ===================================================================== */
+        function calculateCRC16(payloadWithoutCrc) {
+            let crc = 0xFFFF;
+            for (let i = 0; i < payloadWithoutCrc.length; i++) {
+                crc ^= payloadWithoutCrc.charCodeAt(i) << 8;
+                for (let j = 0; j < 8; j++) {
+                    crc = ((crc & 0x8000) !== 0) ? (((crc << 1) ^ 0x1021) & 0xFFFF) : ((crc << 1) & 0xFFFF);
+                }
+            }
+            return crc.toString(16).toUpperCase().padStart(4, '0');
+        }
+
+        function getFinalPixPayload(amount, forceExact = false) {
+            const basePix = (localStorage.getItem(KEYS.PIX_CODE) || DEFAULT_PIX).trim();
+            const mode = forceExact ? 'official_exact' : (localStorage.getItem(KEYS.PIX_MODE) || 'official_with_amount');
+            if (mode === 'official_exact' || !amount || amount <= 0) return basePix;
+
+            try {
+                let idx = 0;
+                const tags = [];
+                while (idx < basePix.length - 4) {
+                    const id = basePix.substring(idx, idx + 2);
+                    const len = parseInt(basePix.substring(idx + 2, idx + 4), 10);
+                    if (isNaN(len)) return basePix;
+                    const val = basePix.substring(idx + 4, idx + 4 + len);
+                    if (id !== '63' && id !== '54') tags.push({ id, val });
+                    idx += 4 + len;
+                }
+                const amountStr = amount.toFixed(2);
+                let rebuilt = '';
+                let inserted = false;
+                for (const t of tags) {
+                    if (!inserted && parseInt(t.id, 10) > 54) {
+                        rebuilt += `54${String(amountStr.length).padStart(2, '0')}${amountStr}`;
+                        inserted = true;
+                    }
+                    rebuilt += `${t.id}${String(t.val.length).padStart(2, '0')}${t.val}`;
+                }
+                rebuilt += '6304';
+                return rebuilt + calculateCRC16(rebuilt);
+            } catch (e) {
+                return basePix;
+            }
+        }
+
+        function roundRectPath(ctx, x, y, w, h, r) {
+            if (typeof r === 'number') r = { tl: r, tr: r, br: r, bl: r };
+            ctx.beginPath();
+            ctx.moveTo(x + r.tl, y);
+            ctx.lineTo(x + w - r.tr, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r.tr);
+            ctx.lineTo(x + w, y + h - r.br);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r.br, y + h);
+            ctx.lineTo(x + r.bl, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r.bl);
+            ctx.lineTo(x, y + r.tl);
+            ctx.quadraticCurveTo(x, y, x + r.tl, y);
+            ctx.closePath();
+        }
+
+        function triggerBlobDownload(blob, fileName) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 4000);
+        }
+
+        /* =====================================================================
+           MÓDULO 1: ENERGIA SOLAR (SOLAR INVEST)
+           ===================================================================== */
+        const TARIFA_KWH = 0.81;
+        const CUSTO_KWH_USINA = 0.176411;
+        const NATIVE_MONTHS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+        const HEADER_WORDS = ['cliente', 'clientkey', 'nome', 'usuario', 'usuário', 'user', 'cip', 'consumo', 'mês', 'mes', 'status', 'vencimento', 'dia'];
+        const AVATAR_COLORS = ['bg-blue-600 text-white', 'bg-violet-600 text-white', 'bg-teal-600 text-white', 'bg-amber-500 text-white', 'bg-emerald-600 text-white', 'bg-purple-600 text-white', 'bg-green-600 text-white', 'bg-orange-500 text-white'];
+
+        let globalSolarInvoices = [];
+        let globalSolarClients = [];
+        let globalSolarVencMap = {};
+        let globalSolarPassMap = {};
+        let currentSolarCards = [];
+
+        async function checkSolarServerHealth(manual = false) {
+            const repo = (localStorage.getItem(KEYS.SOLAR_GITHUB_REPO) || DEFAULT_REPO).trim();
+            const jsonUrl = `https://raw.githubusercontent.com/${repo}/main/status.json?t=${Date.now()}`;
+            const pill = document.getElementById('solar-server-pill');
+            const ping = document.getElementById('solar-led-ping');
+            const dot = document.getElementById('solar-led-dot');
+            const label = document.getElementById('solar-status-label');
+            const sub = document.getElementById('solar-status-sub');
+
+            if (manual) showToast('Verificando servidor PC...');
+
+            try {
+                const res = await fetch(jsonUrl, { cache: 'no-store' });
+                if (!res.ok) throw new Error('Sem arquivo');
+                const data = await res.json();
+                const lastSignal = new Date(data.timestamp);
+                const diffMinutes = Math.max(0, Math.floor((new Date() - lastSignal) / 60000));
+                const isOnline = (diffMinutes <= 135) && (data.django_ok === true);
+
+                let elapsed = diffMinutes < 1 ? 'Agora' : (diffMinutes < 60 ? `há ${diffMinutes}m` : `há ${Math.floor(diffMinutes/60)}h`);
+                document.getElementById('srv-last-seen').innerText = data.hora_local_pc || lastSignal.toLocaleString('pt-BR');
+                document.getElementById('srv-elapsed').innerText = `${diffMinutes} min (${elapsed})`;
+                document.getElementById('srv-robo-activity').innerText = data.status_robo || 'Operando';
+                document.getElementById('srv-ucs-pending').innerText = data.ucs_pendentes !== undefined ? `${data.ucs_pendentes} UCs` : '--';
+
+                if (isOnline) {
+                    pill.className = 'server-pill-online rounded-2xl px-3.5 py-2 flex items-center gap-2.5 cursor-pointer';
+                    ping.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-80';
+                    dot.className = 'relative inline-flex rounded-full h-3 w-3 led-glow-green';
+                    label.className = 'block text-[11px] font-extrabold uppercase text-solar-neon leading-none';
+                    label.innerText = 'SERVIDOR ONLINE';
+                    sub.innerText = `Sinal ${elapsed}`;
+                    document.getElementById('solar-modal-big-status').innerText = '● SERVIDOR ONLINE';
+                    document.getElementById('solar-modal-big-status').className = 'text-lg font-black uppercase text-solar-neon';
+                    document.getElementById('solar-modal-server-desc').innerText = 'Computador local e robô operando normalmente.';
+                } else {
+                    throw new Error('Offline');
+                }
+            } catch (e) {
+                pill.className = 'server-pill-offline rounded-2xl px-3.5 py-2 flex items-center gap-2.5 cursor-pointer';
+                ping.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-85';
+                dot.className = 'relative inline-flex rounded-full h-3 w-3 led-glow-red';
+                label.className = 'block text-[11px] font-extrabold uppercase text-red-400 leading-none';
+                label.innerText = 'SERVIDOR OFFLINE';
+                sub.innerText = 'Sem sinal recente';
+                document.getElementById('solar-modal-big-status').innerText = '● SERVIDOR OFFLINE';
+                document.getElementById('solar-modal-big-status').className = 'text-lg font-black uppercase text-red-400';
+                document.getElementById('solar-modal-server-desc').innerText = 'Sem sinal recente do PC local.';
+            }
+        }
+
+        function openSolarServerModal() { openSheetModal('solar-server-overlay', 'solar-server-sheet'); }
+        function closeSolarServerModal() { closeSheetModal('solar-server-overlay', 'solar-server-sheet'); }
+
+        function parseCSV(str) {
+            const arr = []; let quote = false; let row = [], col = '';
+            for (let c = 0; c < str.length; c++) {
+                let cc = str[c], nc = str[c+1];
+                if (cc === '\r') continue;
+                if (cc === '"' && quote && nc === '"') { col += cc; ++c; continue; }
+                if (cc === '"') { quote = !quote; continue; }
+                if (cc === ',' && !quote) { row.push(col.trim()); col = ''; continue; }
+                if (cc === '\n' && !quote) { if (col.trim() || row.length) { row.push(col.trim()); arr.push(row); } row = []; col = ''; continue; }
+                col += cc;
+            }
+            if (col || row.length) { row.push(col.trim()); arr.push(row); }
+            return arr;
+        }
+
+        function safeParseFloat(val) {
+            if (!val) return 0;
+            if (typeof val === 'number') return val;
+            let str = val.toString().replace(/[R$\s]/g, '');
+            if (str.includes(',') && str.includes('.')) str = str.replace(/\./g, '').replace(',', '.');
+            else if (str.includes(',')) str = str.replace(',', '.');
+            let num = parseFloat(str); return isNaN(num) ? 0 : num;
+        }
+
+        function getMonthIndex(mesStr) {
+            if (!mesStr) return -1;
+            const lower = mesStr.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            return NATIVE_MONTHS.map(m => m.normalize("NFD").replace(/[\u0300-\u036f]/g, "")).findIndex(m => lower.includes(m));
+        }
+
+        function buildSolarDueInfo(dueDay, mesStr, isPaid, hasData) {
+            if (!dueDay) return { shortLabel: 'Vencimento: --', fullLabel: 'Não cadastrado', fullDateSlash: '--/--/----', whatsappDayLabel: 'A combinar', textClass: 'text-slate-400' };
+            const dayPadded = String(dueDay).padStart(2, '0');
+            const refMonthIdx = getMonthIndex(mesStr);
+            if (refMonthIdx === -1) return { shortLabel: `Vencimento: Dia ${dayPadded}`, fullLabel: `Todo dia ${dayPadded}`, fullDateSlash: `Dia ${dayPadded}`, whatsappDayLabel: `Dia ${dayPadded}`, textClass: 'text-slate-300' };
+
+            const now = new Date();
+            let targetYear = now.getFullYear();
+            let dueMonthIdx = dueDay <= 5 ? refMonthIdx + 1 : refMonthIdx;
+            if (dueMonthIdx > 11) { dueMonthIdx = 0; targetYear += 1; }
+            const monthPadded = String(dueMonthIdx + 1).padStart(2, '0');
+            const formattedDate = `${dayPadded}/${monthPadded}`;
+            const fullDateSlash = `${dayPadded}/${monthPadded}/${targetYear}`;
+
+            return {
+                shortLabel: `Vencimento: ${formattedDate}`,
+                fullLabel: `Vencimento: ${fullDateSlash}`,
+                fullDateSlash,
+                whatsappDayLabel: `Dia ${dayPadded}`,
+                textClass: isPaid ? 'text-emerald-400' : 'text-sky-300'
+            };
+        }
+
+        async function fetchGoogleSheetCSV(sheetName) {
+            const SHEET_ID = localStorage.getItem(KEYS.SOLAR_SHEET_ID);
+            if (!SHEET_ID) throw new Error('NO_SHEET_ID');
+            const urls = [
+                `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`,
+                `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(sheetName)}`
+            ];
+            for (const url of urls) {
+                try {
+                    const res = await fetch(url);
+                    if (res.ok) {
+                        const text = await res.text();
+                        if (!text.trim().startsWith('<!DOCTYPE')) return parseCSV(text);
+                    }
+                } catch (e) {}
+            }
+            throw new Error('Planilha inacessível');
+        }
