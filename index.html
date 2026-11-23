@@ -385,6 +385,51 @@
       letter-spacing: -0.1px;
     }
 
+    .label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      padding: 0 4px;
+    }
+    .label-row label {
+      margin-bottom: 0;
+      padding-left: 0;
+    }
+
+    .btn-paste-link {
+      background: rgba(56, 189, 248, 0.16);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #7DD3FC;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 99px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: transform 0.15s var(--spring), background 0.15s;
+    }
+    .btn-paste-link:active {
+      transform: scale(0.95);
+      background: rgba(56, 189, 248, 0.26);
+    }
+
+    .link-provider-hint {
+      margin-top: 6px;
+      padding-left: 4px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .link-provider-hint.valid-maps { color: #6EE7B7; }
+    .link-provider-hint.valid-waze { color: #7DD3FC; }
+    .link-provider-hint.invalid-link { color: #FCA5A5; }
+
     .input-wrap {
       position: relative;
       display: flex;
@@ -775,6 +820,34 @@
       flex-shrink: 0;
     }
     .meta-line strong { color: #F1F5F9; font-weight: 700; }
+
+    .map-link-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 11px;
+      border-radius: 10px;
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.32);
+      color: #7DD3FC;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .map-link-pill.waze {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: rgba(56, 189, 248, 0.45);
+      color: #BAE6FD;
+    }
+    .map-link-pill.gmaps {
+      background: rgba(16, 185, 129, 0.14);
+      border-color: rgba(16, 185, 129, 0.35);
+      color: #6EE7B7;
+    }
 
     .problem-box {
       background: rgba(239, 68, 68, 0.2);
@@ -1273,8 +1346,20 @@
         </div>
 
         <div class="field-group">
-          <label>Endereço Completo</label>
-          <input type="text" id="os-endereco" class="glass-input" placeholder="Rua, Quadra, Lote, Bairro, Cidade" required>
+          <div class="label-row">
+            <label for="os-endereco">Link da Localização (Google Maps ou Waze)</label>
+            <button type="button" onclick="colarLinkLocalizacao()" class="btn-paste-link">
+              <svg class="sf-icon" style="width:12px;height:12px;" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+              <span>Colar Link</span>
+            </button>
+          </div>
+          <div class="input-wrap">
+            <svg class="sf-icon input-icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <input type="url" id="os-endereco" class="glass-input" inputmode="url" placeholder="https://maps.app.goo.gl/... ou https://waze.com/ul/..." required>
+          </div>
+          <div id="link-provider-status" class="link-provider-hint">
+            Cole o link compartilhado do Google Maps ou Waze
+          </div>
         </div>
 
         <div class="form-grid-2">
@@ -1356,6 +1441,15 @@
         e.target.value = v;
       });
 
+      const inputLink = document.getElementById("os-endereco");
+      inputLink.addEventListener("input", () => {
+        const extraido = extrairUrlDeTexto(inputLink.value);
+        if (extraido && extraido !== inputLink.value.trim()) {
+          inputLink.value = extraido;
+        }
+        atualizarIndicadorLink(inputLink.value);
+      });
+
       const savedDono = localStorage.getItem(KEY_DONO_USER);
       if (savedDono) {
         usuarioDono = JSON.parse(savedDono);
@@ -1375,6 +1469,96 @@
     function registrarServiceWorker() {
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("sw.js").catch(() => {});
+      }
+    }
+
+    // =========================================================
+    // UTILITÁRIOS DE SEGURANÇA & LINKS (GOOGLE MAPS / WAZE)
+    // =========================================================
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function extrairUrlDeTexto(texto) {
+      const match = String(texto || "").match(/https?:\/\/[^\s"'<>]+/i);
+      return match ? match[0] : String(texto || "").trim();
+    }
+
+    function analisarLinkMapa(valor) {
+      const limpo = extrairUrlDeTexto(valor);
+      if (!limpo) return { valido: false, tipo: "vazio", url: "" };
+
+      try {
+        const urlObj = new URL(limpo);
+        if (!["http:", "https:"].includes(urlObj.protocol)) {
+          return { valido: false, tipo: "invalido", url: limpo };
+        }
+        const host = urlObj.hostname.toLowerCase();
+        const path = urlObj.pathname.toLowerCase();
+
+        const isWaze = host === "waze.com" || host.endsWith(".waze.com");
+        const isGoogleMaps =
+          host === "maps.app.goo.gl" ||
+          (host === "goo.gl" && path.startsWith("/maps")) ||
+          host.startsWith("maps.google.") ||
+          ((host === "google.com" || host.endsWith(".google.com") || host.includes("google.com.")) &&
+            (path.startsWith("/maps") || urlObj.searchParams.has("q") || urlObj.searchParams.has("destination")));
+
+        if (isWaze) return { valido: true, tipo: "waze", url: limpo };
+        if (isGoogleMaps) return { valido: true, tipo: "gmaps", url: limpo };
+
+        return { valido: false, tipo: "invalido", url: limpo };
+      } catch (e) {
+        return { valido: false, tipo: "invalido", url: limpo };
+      }
+    }
+
+    function atualizarIndicadorLink(valor) {
+      const statusEl = document.getElementById("link-provider-status");
+      if (!statusEl) return;
+
+      const info = analisarLinkMapa(valor);
+      statusEl.className = "link-provider-hint";
+
+      if (info.tipo === "vazio") {
+        statusEl.textContent = "Cole o link compartilhado do Google Maps ou Waze";
+      } else if (info.tipo === "gmaps") {
+        statusEl.classList.add("valid-maps");
+        statusEl.textContent = "✓ Link do Google Maps identificado";
+      } else if (info.tipo === "waze") {
+        statusEl.classList.add("valid-waze");
+        statusEl.textContent = "✓ Link do Waze identificado";
+      } else {
+        statusEl.classList.add("invalid-link");
+        statusEl.textContent = "✕ Use um link válido do Google Maps ou Waze";
+      }
+    }
+
+    async function colarLinkLocalizacao() {
+      try {
+        if (!navigator.clipboard || !navigator.clipboard.readText) {
+          mostrarToast("⚠️ Cole manualmente no campo de localização.");
+          return;
+        }
+        const texto = await navigator.clipboard.readText();
+        const urlExtraida = extrairUrlDeTexto(texto);
+        const input = document.getElementById("os-endereco");
+        input.value = urlExtraida;
+        atualizarIndicadorLink(urlExtraida);
+
+        const analise = analisarLinkMapa(urlExtraida);
+        if (analise.valido) {
+          mostrarToast(analise.tipo === "waze" ? "📍 Link do Waze colado!" : "📍 Link do Google Maps colado!");
+        } else {
+          mostrarToast("⚠️ O texto colado não parece ser um link do Maps ou Waze.");
+        }
+      } catch (err) {
+        mostrarToast("⚠️ Permita o acesso à área de transferência ou cole manualmente.");
       }
     }
 
@@ -1649,6 +1833,31 @@
       renderizarDashboard();
     }
 
+    function renderizarLocalizacaoCard(enderecoRaw) {
+      const info = analisarLinkMapa(enderecoRaw);
+      if (info.valido) {
+        const label = info.tipo === "waze" ? "Abrir Rota no Waze" : "Abrir Rota no Google Maps";
+        const cls = info.tipo === "waze" ? "waze" : "gmaps";
+        return `
+          <a href="${escapeHtml(info.url)}" target="_blank" rel="noopener noreferrer" class="map-link-pill ${cls}">
+            <span>${label}</span>
+            <svg class="sf-icon" style="width:12px;height:12px;" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        `;
+      }
+
+      const texto = String(enderecoRaw || "").trim();
+      if (!texto) {
+        return `<span>Localização não informada</span>`;
+      }
+      const buscaMaps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(texto)}`;
+      return `
+        <a href="${buscaMaps}" target="_blank" rel="noopener noreferrer" class="map-link-pill" title="${escapeHtml(texto)}">
+          <span>${escapeHtml(texto)}</span>
+        </a>
+      `;
+    }
+
     function renderizarDashboard() {
       const ativas = listaObras.filter(o => o.status === "Em Andamento" || o.status === "A Caminho").length;
       const problemas = listaObras.filter(o => o.status === "Com Problema").length;
@@ -1680,50 +1889,52 @@
         const isProb = obra.status === "Com Problema";
         const dataBR = obra.dataAgendada ? obra.dataAgendada.split("-").reverse().join("/") : "--/--";
         const foneLimpo = String(obra.clienteTelefone || "").replace(/\D/g, "");
+        const nomeSeguro = escapeHtml(obra.clienteNome);
+        const idSeguro = escapeHtml(obra.id);
 
         return `
           <article class="os-card glass-panel ${isProb ? "problem-alert" : ""}">
             <div class="card-top">
-              <span class="status-pill ${stClass}"><span class="status-dot"></span>${obra.status}</span>
-              <span class="os-id-tag">${obra.id} • ${dataBR}</span>
+              <span class="status-pill ${stClass}"><span class="status-dot"></span>${escapeHtml(obra.status)}</span>
+              <span class="os-id-tag">${idSeguro} • ${escapeHtml(dataBR)}</span>
             </div>
 
-            <h4 class="client-title">${obra.clienteNome}</h4>
+            <h4 class="client-title">${nomeSeguro}</h4>
             <div class="meta-list">
               <p class="meta-line">
                 <svg class="sf-icon sf-icon-sm" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <span>Equipe: <strong>${obra.equipeNome}</strong> • <strong>${obra.qtdPlacas || 0} placas</strong></span>
+                <span>Equipe: <strong>${escapeHtml(obra.equipeNome)}</strong> • <strong>${escapeHtml(obra.qtdPlacas || 0)} placas</strong></span>
               </p>
-              <p class="meta-line">
+              <div class="meta-line">
                 <svg class="sf-icon sf-icon-sm" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                <span>${obra.endereco}</span>
-              </p>
+                ${renderizarLocalizacaoCard(obra.endereco)}
+              </div>
               <p class="meta-line">
                 <svg class="sf-icon sf-icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span>Início: <strong>${obra.horaInicio || "--:--"}</strong> • Fim: <strong>${obra.horaFim || "--:--"}</strong></span>
+                <span>Início: <strong>${escapeHtml(obra.horaInicio || "--:--")}</strong> • Fim: <strong>${escapeHtml(obra.horaFim || "--:--")}</strong></span>
               </p>
             </div>
 
             ${isProb ? `
               <div class="problem-box">
                 <svg class="sf-icon sf-icon-sm" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                <span>${obra.motivoProblema || "Problema reportado em campo"}</span>
+                <span>${escapeHtml(obra.motivoProblema || "Problema reportado em campo")}</span>
               </div>
             ` : ""}
 
             <div class="card-actions">
-              <button type="button" onclick="abrirModalObra('${obra.id}')" class="btn-glass-sm">
+              <button type="button" onclick="abrirModalObra('${idSeguro}')" class="btn-glass-sm">
                 <svg class="sf-icon sf-icon-sm" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 <span>Editar OS</span>
               </button>
               ${foneLimpo
-                ? `<a href="https://wa.me/55${foneLimpo}" target="_blank" class="btn-glass-sm whats">
+                ? `<a href="https://wa.me/55${foneLimpo}" target="_blank" rel="noopener noreferrer" class="btn-glass-sm whats">
                     <svg class="sf-icon sf-icon-sm" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
                     <span>WhatsApp</span>
                    </a>`
                 : `<span class="btn-glass-sm" style="opacity:0.4;">Sem Fone</span>`
               }
-              <button type="button" onclick="confirmarExcluirObra('${obra.id}', '${obra.clienteNome}')" class="btn-glass-sm del" title="Excluir OS" aria-label="Excluir OS">
+              <button type="button" onclick="confirmarExcluirObra('${idSeguro}')" class="btn-glass-sm del" title="Excluir OS" aria-label="Excluir OS">
                 <svg class="sf-icon sf-icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
               </button>
             </div>
@@ -1740,7 +1951,7 @@
       const colabs = listaUsuarios.filter(u => u.perfil === "Colaborador" && String(u.ativo).toLowerCase() === "sim");
 
       select.innerHTML = colabs.length
-        ? colabs.map(c => `<option value="${c.id}">${c.nome}</option>`).join("")
+        ? colabs.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.nome)}</option>`).join("")
         : `<option value="">Cadastre um colaborador primeiro</option>`;
 
       if (idObra) {
@@ -1753,7 +1964,7 @@
         document.getElementById("os-status").value = o.status;
         document.getElementById("os-tel").value = o.clienteTelefone;
         document.getElementById("os-cliente").value = o.clienteNome;
-        document.getElementById("os-endereco").value = o.endereco;
+        document.getElementById("os-endereco").value = o.endereco || "";
         document.getElementById("os-placas").value = o.qtdPlacas;
         document.getElementById("os-telhado").value = o.tipoTelhado;
         document.getElementById("os-inversor").value = o.modeloInversor;
@@ -1762,12 +1973,14 @@
         document.getElementById("os-local-pad").value = o.localPadrao;
         document.getElementById("os-alertas").value = o.alertasAcesso;
         document.getElementById("os-checklist").value = o.checklistCarga;
+        atualizarIndicadorLink(o.endereco || "");
       } else {
         document.getElementById("modal-os-titulo").textContent = "Novo Serviço / OS";
         document.getElementById("form-obra").reset();
         document.getElementById("os-id").value = "";
         document.getElementById("os-status").value = "Agendada";
         document.getElementById("os-data").value = new Date().toISOString().split("T")[0];
+        atualizarIndicadorLink("");
       }
 
       document.getElementById("modal-obra").classList.remove("hidden");
@@ -1779,6 +1992,17 @@
 
     document.getElementById("form-obra").addEventListener("submit", async (e) => {
       e.preventDefault();
+
+      const linkLocalizacao = extrairUrlDeTexto(document.getElementById("os-endereco").value);
+      const validacaoLink = analisarLinkMapa(linkLocalizacao);
+
+      if (!validacaoLink.valido) {
+        atualizarIndicadorLink(linkLocalizacao);
+        mostrarToast("⚠️ Cole um link válido do Google Maps ou Waze.");
+        document.getElementById("os-endereco").focus();
+        return;
+      }
+
       const obra = {
         id: document.getElementById("os-id").value,
         dataAgendada: document.getElementById("os-data").value,
@@ -1786,7 +2010,7 @@
         status: document.getElementById("os-status").value,
         clienteTelefone: document.getElementById("os-tel").value.replace(/\D/g, ""),
         clienteNome: document.getElementById("os-cliente").value.trim(),
-        endereco: document.getElementById("os-endereco").value.trim(),
+        endereco: validacaoLink.url,
         qtdPlacas: document.getElementById("os-placas").value,
         tipoTelhado: document.getElementById("os-telhado").value.trim(),
         modeloInversor: document.getElementById("os-inversor").value.trim(),
@@ -1820,8 +2044,11 @@
       }
     });
 
-    async function confirmarExcluirObra(idObra, clienteNome) {
-      if (!confirm(`Remover definitivamente a OS ${idObra} (${clienteNome})?`)) return;
+    async function confirmarExcluirObra(idObra) {
+      const obraAlvo = listaObras.find(item => String(item.id) === String(idObra));
+      const nomeCliente = obraAlvo ? obraAlvo.clienteNome : "";
+      if (!confirm(`Remover definitivamente a OS ${idObra}${nomeCliente ? ` (${nomeCliente})` : ""}?`)) return;
+
       mostrarLoader(true, "Removendo OS...");
       try {
         const response = await fetch(API_URL, {
@@ -1855,10 +2082,11 @@
 
       container.innerHTML = colabs.map(u => {
         const ativo = String(u.ativo).toLowerCase() === "sim";
+        const idSeguro = escapeHtml(u.id);
         return `
           <div class="os-card glass-panel">
             <div class="card-top">
-              <strong style="font-size: 16.5px; letter-spacing: -0.2px;">${u.nome}</strong>
+              <strong style="font-size: 16.5px; letter-spacing: -0.2px;">${escapeHtml(u.nome)}</strong>
               <span class="status-pill ${ativo ? "st-Concluida" : "st-ComProblema"}">
                 <span class="status-dot"></span>
                 ${ativo ? "Acesso Ativo" : "Acesso Removido"}
@@ -1866,14 +2094,14 @@
             </div>
             <p class="meta-line">
               <svg class="sf-icon sf-icon-sm" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-              <span>${u.telefone} • PIN: <strong>${u.pin}</strong></span>
+              <span>${escapeHtml(u.telefone)} • PIN: <strong>${escapeHtml(u.pin)}</strong></span>
             </p>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08);">
-              <button type="button" onclick="editarUsuario('${u.id}')" class="btn-glass-sm">
+              <button type="button" onclick="editarUsuario('${idSeguro}')" class="btn-glass-sm">
                 <svg class="sf-icon sf-icon-sm" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 <span>Editar PIN</span>
               </button>
-              <button type="button" onclick="alternarAcessoUsuario('${u.id}', '${ativo ? "Não" : "Sim"}', '${u.nome}')" class="btn-glass-sm ${ativo ? "del" : "whats"}">
+              <button type="button" onclick="alternarAcessoUsuario('${idSeguro}', '${ativo ? "Não" : "Sim"}')" class="btn-glass-sm ${ativo ? "del" : "whats"}">
                 ${ativo
                   ? `<svg class="sf-icon sf-icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg><span>Remover Acesso</span>`
                   : `<svg class="sf-icon sf-icon-sm" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span>Reativar Acesso</span>`
@@ -1890,7 +2118,7 @@
       if (!u) return;
       document.getElementById("titulo-form-usr").innerHTML = `
         <svg class="sf-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        <span>Editando ${u.nome}</span>
+        <span>Editando ${escapeHtml(u.nome)}</span>
       `;
       document.getElementById("usr-id").value = u.id;
       document.getElementById("usr-nome").value = u.nome;
@@ -1911,7 +2139,9 @@
       document.getElementById("btn-cancelar-usr").classList.add("hidden");
     }
 
-    async function alternarAcessoUsuario(userId, novoStatus, nome) {
+    async function alternarAcessoUsuario(userId, novoStatus) {
+      const usr = listaUsuarios.find(item => String(item.id) === String(userId));
+      const nome = usr ? usr.nome : "este colaborador";
       const acao = novoStatus === "Não" ? "remover o acesso de" : "reativar o acesso de";
       if (!confirm(`Deseja ${acao} ${nome}?`)) return;
 
