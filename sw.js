@@ -1,3 +1,7 @@
+// sw.js - Compatível com OneSignal v16 + PWA Off-line
+importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
+
+
 const CACHE_NAME = "tnsolar-gestao-v1";
 const ASSETS = [
   "./",
