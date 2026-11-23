@@ -1,0 +1,19 @@
+{
+  "name": "TNSolar Gestão - Proprietário",
+  "short_name": "TNSolar Gestão",
+  "description": "Painel administrativo Apple Glass para controle de obras solares.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#070D19",
+  "theme_color": "#070D19",
+  "icons": [
+    {
+      "src": "logotn.jpg",
+      "sizes": "1254x1254",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
