@@ -198,6 +198,111 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ==========================================
+       TRAVA DE LICENÇA (BLOQUEIO POR INADIMPLÊNCIA)
+       ========================================== */
+    .license-lock-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: radial-gradient(circle at 50% 15%, rgba(127, 29, 29, 0.42) 0%, rgba(5, 8, 17, 0.98) 72%);
+      backdrop-filter: blur(28px) saturate(180%);
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: calc(28px + var(--safe-top)) 20px calc(22px + var(--safe-bottom));
+      text-align: center;
+    }
+    .license-lock-card {
+      width: 100%;
+      max-width: 400px;
+      margin: auto 0;
+      border-radius: 32px;
+      padding: 32px 24px 28px;
+      background: linear-gradient(160deg, rgba(239, 68, 68, 0.16) 0%, rgba(15, 23, 42, 0.88) 100%);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+    .lock-icon-orb {
+      width: 78px;
+      height: 78px;
+      border-radius: 24px;
+      margin: 0 auto 18px;
+      background: rgba(239, 68, 68, 0.18);
+      border: 1.5px solid rgba(248, 113, 113, 0.55);
+      color: #FCA5A5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 32px rgba(239, 68, 68, 0.35);
+    }
+    .lock-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 13px;
+      border-radius: 99px;
+      background: rgba(239, 68, 68, 0.22);
+      border: 1px solid rgba(248, 113, 113, 0.45);
+      color: #FECACA;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .license-lock-card h2 {
+      font-size: 23px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+      color: #FFFFFF;
+      margin-bottom: 10px;
+    }
+    .license-lock-card p {
+      font-size: 14px;
+      color: #CBD5E1;
+      line-height: 1.55;
+      margin-bottom: 20px;
+    }
+    .lock-info-box {
+      background: rgba(5, 8, 17, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 13px 15px;
+      font-size: 12.5px;
+      color: #94A3B8;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .lock-info-box strong {
+      color: #F8FAFC;
+      display: block;
+      margin-bottom: 3px;
+      font-size: 13px;
+    }
+    .btn-retry-license {
+      width: 100%;
+      padding: 15px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: rgba(255, 255, 255, 0.1);
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.16s var(--spring), background 0.16s;
+    }
+    .btn-retry-license:active {
+      transform: scale(0.965);
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    /* ==========================================
        1. TELA DE LOGIN
        ========================================== */
     #view-login {
@@ -885,6 +990,42 @@
   </div>
 
   <!-- ==========================================
+       TRAVA DE LICENÇA (SISTEMA BLOQUEADO)
+       ========================================== -->
+  <div id="license-lock-screen" class="license-lock-overlay hidden">
+    <div class="license-lock-card">
+      <div class="lock-icon-orb">
+        <svg class="sf-icon" style="width:36px; height:36px;" viewBox="0 0 24 24">
+          <rect x="3" y="11" width="18" height="11" rx="3"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <div class="lock-badge">
+        <span style="width:7px;height:7px;border-radius:50%;background:#F87171;box-shadow:0 0 8px #EF4444;"></span>
+        <span>Sistema Fora de Área</span>
+      </div>
+      <h2>Licença Suspensa por Pendência Financeira</h2>
+      <p id="license-lock-msg">
+        O acesso ao painel administrativo TNSolar Gestão está temporariamente bloqueado devido à mensalidade em atraso.
+      </p>
+
+      <div class="lock-info-box">
+        <strong>Como restabelecer o acesso:</strong>
+        <span>Realize a regularização da assinatura junto ao suporte FlowNest. Assim que o pagamento for confirmado, o sistema será liberado automaticamente.</span>
+      </div>
+
+      <button type="button" onclick="verificarLicencaManual()" class="btn-retry-license">
+        <svg class="sf-icon sf-icon-sm" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        <span>Verificar Liberação Agora</span>
+      </button>
+    </div>
+
+    <footer class="flownest-footer">
+      <span>Gestão de Licenças by</span> <strong>FlowNest</strong>
+    </footer>
+  </div>
+
+  <!-- ==========================================
        1. TELA DE LOGIN (PROPRIETÁRIO)
        ========================================== -->
   <section id="view-login" class="view">
@@ -1191,9 +1332,9 @@
 
   <script>
     // =========================================================
-    // CONFIGURAÇÕES PRINCIPAIS (COLE A URL DO APPS SCRIPT AQUI)
+    // CONFIGURAÇÕES PRINCIPAIS (URL DO APPS SCRIPT ATUALIZADA)
     // =========================================================
-    const API_URL = "https://script.google.com/macros/s/AKfycbxpzR3WZ5OKj1oLmCc1UDGuWg7aDRyTVc0Q9GRzMDywtqwHJF0Sbp_oiIu-6n_Up-myrQ/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbw4m2ISFULDPncDzbYuyghKW10bFCnT0FLOCl7HFyUW8c6Y2jMXuDvxIMf675G7lctsUQ/exec";
     const ONESIGNAL_APP_ID = "99aedd19-c945-4757-8720-f55cbef0c500";
 
     const KEY_DONO_USER = "tnsolar_dono_user";
@@ -1202,6 +1343,7 @@
     let listaUsuarios = [];
     let filtroAtual = "Todas";
     let oneSignalIniciado = false;
+    let sistemaBloqueado = false;
 
     document.addEventListener("DOMContentLoaded", () => {
       registrarServiceWorker();
@@ -1218,12 +1360,87 @@
       if (savedDono) {
         usuarioDono = JSON.parse(savedDono);
         entrarNoPainel();
+      } else {
+        verificarLicencaSilenciosa();
+      }
+    });
+
+    // Verifica novamente se a licença foi travada/liberada sempre que o app volta para primeiro plano
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        verificarLicencaSilenciosa();
       }
     });
 
     function registrarServiceWorker() {
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("sw.js").catch(() => {});
+      }
+    }
+
+    // =========================================================
+    // CONTROLE E TRAVA DE LICENÇA (ATIVO / BLOQUEADO)
+    // =========================================================
+    function ativarTelaBloqueio(mensagem) {
+      sistemaBloqueado = true;
+      localStorage.removeItem(KEY_DONO_USER);
+      usuarioDono = null;
+
+      if (mensagem) {
+        document.getElementById("license-lock-msg").textContent = mensagem;
+      }
+
+      document.getElementById("modal-obra").classList.add("hidden");
+      document.getElementById("view-dono").classList.add("hidden");
+      document.getElementById("view-login").classList.add("hidden");
+      document.getElementById("license-lock-screen").classList.remove("hidden");
+    }
+
+    function desativarTelaBloqueio() {
+      if (!sistemaBloqueado && document.getElementById("license-lock-screen").classList.contains("hidden")) {
+        return;
+      }
+      sistemaBloqueado = false;
+      document.getElementById("license-lock-screen").classList.add("hidden");
+
+      const savedDono = localStorage.getItem(KEY_DONO_USER);
+      if (savedDono) {
+        usuarioDono = JSON.parse(savedDono);
+        trocarTela("view-dono");
+        sincronizarDados(false);
+      } else {
+        trocarTela("view-login");
+      }
+    }
+
+    async function verificarLicencaSilenciosa() {
+      try {
+        const res = await fetch(`${API_URL}?action=check_license&t=${Date.now()}`);
+        const data = await res.json();
+        if (data && (data.status === "locked" || (data.sistema && !data.sistema.ativo))) {
+          ativarTelaBloqueio(data.message);
+        } else if (data && (data.status === "ok" || (data.sistema && data.sistema.ativo))) {
+          desativarTelaBloqueio();
+        }
+      } catch (e) {}
+    }
+
+    async function verificarLicencaManual() {
+      mostrarLoader(true, "Verificando status da licença...");
+      try {
+        const res = await fetch(`${API_URL}?action=check_license&t=${Date.now()}`);
+        const data = await res.json();
+        if (data && (data.status === "locked" || (data.sistema && !data.sistema.ativo))) {
+          ativarTelaBloqueio(data.message);
+          mostrarToast("🔒 A licença continua suspensa.");
+        } else {
+          desativarTelaBloqueio();
+          mostrarToast("✅ Licença liberada! Acesso restaurado.");
+        }
+      } catch (e) {
+        mostrarToast("⚠️ Sem conexão para verificar a licença.");
+      } finally {
+        mostrarLoader(false);
       }
     }
 
@@ -1323,7 +1540,7 @@
     }
 
     // =========================================================
-    // LOGIN DO PROPRIETÁRIO (DIRETO E RÁPIDO)
+    // LOGIN DO PROPRIETÁRIO (COM CHECAGEM DE LICENÇA)
     // =========================================================
     document.getElementById("form-login").addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -1347,6 +1564,11 @@
           body: JSON.stringify({ action: "login", telefone, pin, playerId })
         });
         const res = await response.json();
+
+        if (res.status === "locked") {
+          ativarTelaBloqueio(res.message);
+          return;
+        }
 
         if (res.status === "success") {
           if (res.user.perfil !== "Dono") {
@@ -1388,14 +1610,20 @@
     }
 
     // =========================================================
-    // SINCRONIZAÇÃO DE DADOS
+    // SINCRONIZAÇÃO DE DADOS (COM BLOQUEIO AUTOMÁTICO)
     // =========================================================
     async function sincronizarDados(exibirFeedback = true) {
+      if (!usuarioDono) return;
       if (exibirFeedback) mostrarLoader(true, "Atualizando dados...");
       try {
-        const url = `${API_URL}?action=getDados&perfil=Dono&userId=${encodeURIComponent(usuarioDono.id)}`;
+        const url = `${API_URL}?action=getDados&perfil=Dono&userId=${encodeURIComponent(usuarioDono.id)}&t=${Date.now()}`;
         const response = await fetch(url);
         const data = await response.json();
+
+        if (data.status === "locked") {
+          ativarTelaBloqueio(data.message);
+          return;
+        }
 
         if (data.status === "success") {
           listaObras = data.obras || [];
@@ -1573,11 +1801,16 @@
       mostrarLoader(true, "Salvando serviço...");
 
       try {
-        await fetch(API_URL, {
+        const response = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({ action: "salvarObra", obra, autorNome: usuarioDono.nome })
         });
+        const res = await response.json();
+        if (res.status === "locked") {
+          ativarTelaBloqueio(res.message);
+          return;
+        }
         await sincronizarDados(false);
         mostrarToast("✅ Serviço salvo com sucesso!");
       } catch (err) {
@@ -1591,11 +1824,16 @@
       if (!confirm(`Remover definitivamente a OS ${idObra} (${clienteNome})?`)) return;
       mostrarLoader(true, "Removendo OS...");
       try {
-        await fetch(API_URL, {
+        const response = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({ action: "excluirObra", idObra })
         });
+        const res = await response.json();
+        if (res.status === "locked") {
+          ativarTelaBloqueio(res.message);
+          return;
+        }
         await sincronizarDados(false);
         mostrarToast("🗑️ Serviço removido!");
       } finally {
@@ -1679,11 +1917,16 @@
 
       mostrarLoader(true, "Atualizando permissão...");
       try {
-        await fetch(API_URL, {
+        const response = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({ action: "alterarStatusUsuario", userId, ativo: novoStatus })
         });
+        const res = await response.json();
+        if (res.status === "locked") {
+          ativarTelaBloqueio(res.message);
+          return;
+        }
         await sincronizarDados(false);
         mostrarToast(novoStatus === "Não" ? "🚫 Acesso removido!" : "✅ Acesso reativado!");
       } finally {
@@ -1704,11 +1947,16 @@
 
       mostrarLoader(true, "Salvando colaborador...");
       try {
-        await fetch(API_URL, {
+        const response = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({ action: "salvarUsuario", usuario })
         });
+        const res = await response.json();
+        if (res.status === "locked") {
+          ativarTelaBloqueio(res.message);
+          return;
+        }
         resetarFormUsuario();
         await sincronizarDados(false);
         mostrarToast("✅ Colaborador salvo!");
